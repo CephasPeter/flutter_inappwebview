@@ -51,6 +51,7 @@ import com.pichillilorenzo.flutter_inappwebview.types.WebResourceResponseExt;
 import com.pichillilorenzo.flutter_inappwebview.webview.WebViewChannelDelegate;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -693,6 +694,25 @@ public class InAppWebViewClientCompat extends WebViewClientCompat {
         ByteArrayInputStream inputStream = (data != null) ? new ByteArrayInputStream(data) : null;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && statusCode != null && reasonPhrase != null) {
+          if(statusCode > 599 || statusCode > 299 && statusCode < 400 || statusCode < 100 || reasonPhrase.trim().isEmpty()){
+            try{
+              WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, contentEncoding, inputStream);
+              webResourceResponse.setResponseHeaders(responseHeaders);
+
+              Field statusCodeField = WebResourceResponse.class.getDeclaredField("mStatusCode");
+              statusCodeField.setAccessible(true);
+              statusCodeField.setInt(webResourceResponse, statusCode);
+
+              Field reasonPhraseField = WebResourceResponse.class.getDeclaredField("mReasonPhrase");
+              reasonPhraseField.setAccessible(true);
+              reasonPhraseField.set(webResourceResponse,reasonPhrase);
+              return webResourceResponse;
+            }catch(Exception e){
+              WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, contentEncoding, inputStream);
+              webResourceResponse.setResponseHeaders(responseHeaders);
+              return  webResourceResponse;
+            }
+          }
           return new WebResourceResponse(contentType, contentEncoding, statusCode, reasonPhrase, responseHeaders, inputStream);
         } else {
           return new WebResourceResponse(contentType, contentEncoding, inputStream);

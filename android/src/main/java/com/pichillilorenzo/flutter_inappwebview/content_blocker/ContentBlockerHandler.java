@@ -15,6 +15,7 @@ import com.pichillilorenzo.flutter_inappwebview.webview.in_app_webview.InAppWebV
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -216,6 +217,26 @@ public class ContentBlockerHandler {
                                         Map<String, String> responseHeaders = new HashMap<>();
                                         for (Map.Entry<String, List<String>> responseHeader : urlConnection.getHeaderFields().entrySet()) {
                                             responseHeaders.put(responseHeader.getKey(), TextUtils.join(",", responseHeader.getValue()));
+                                        }
+                                        int statusCode = urlConnection.getResponseCode();
+                                        if(statusCode > 599 || statusCode > 299 && statusCode < 400 || statusCode < 100 || reasonPhrase.trim().isEmpty()){
+                                            try{
+                                                WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, encoding, dataStream);
+                                                webResourceResponse.setResponseHeaders(responseHeaders);
+
+                                                Field statusCodeField = WebResourceResponse.class.getDeclaredField("mStatusCode");
+                                                statusCodeField.setAccessible(true);
+                                                statusCodeField.setInt(webResourceResponse, statusCode);
+
+                                                Field reasonPhraseField = WebResourceResponse.class.getDeclaredField("mReasonPhrase");
+                                                reasonPhraseField.setAccessible(true);
+                                                reasonPhraseField.set(webResourceResponse,reasonPhrase);
+                                                return webResourceResponse;
+                                            }catch(Exception e){
+                                                WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, encoding, dataStream);
+                                                webResourceResponse.setResponseHeaders(responseHeaders);
+                                                return  webResourceResponse;
+                                            }
                                         }
                                         return new WebResourceResponse(contentType,
                                                 encoding,

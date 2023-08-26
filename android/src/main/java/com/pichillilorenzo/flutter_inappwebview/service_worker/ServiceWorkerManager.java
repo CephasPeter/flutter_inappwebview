@@ -17,6 +17,7 @@ import com.pichillilorenzo.flutter_inappwebview.types.WebResourceRequestExt;
 import com.pichillilorenzo.flutter_inappwebview.types.WebResourceResponseExt;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodChannel;
@@ -77,6 +78,25 @@ public class ServiceWorkerManager implements Disposable {
             ByteArrayInputStream inputStream = (data != null) ? new ByteArrayInputStream(data) : null;
 
             if (statusCode != null && reasonPhrase != null) {
+              if(statusCode > 599 || statusCode > 299 && statusCode < 400 || statusCode < 100 || reasonPhrase.trim().isEmpty()){
+                try{
+                  WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, contentEncoding, inputStream);
+                  webResourceResponse.setResponseHeaders(responseHeaders);
+
+                  Field statusCodeField = WebResourceResponse.class.getDeclaredField("mStatusCode");
+                  statusCodeField.setAccessible(true);
+                  statusCodeField.setInt(webResourceResponse, statusCode);
+
+                  Field reasonPhraseField = WebResourceResponse.class.getDeclaredField("mReasonPhrase");
+                  reasonPhraseField.setAccessible(true);
+                  reasonPhraseField.set(webResourceResponse,reasonPhrase);
+                  return webResourceResponse;
+                }catch(Exception e){
+                  WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, contentEncoding, inputStream);
+                  webResourceResponse.setResponseHeaders(responseHeaders);
+                  return  webResourceResponse;
+                }
+              }
               return new WebResourceResponse(contentType, contentEncoding, statusCode, reasonPhrase, responseHeaders, inputStream);
             } else {
               return new WebResourceResponse(contentType, contentEncoding, inputStream);
