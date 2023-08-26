@@ -668,7 +668,7 @@ public class InAppWebViewClient extends WebViewClient {
 
         //return new WebResourceResponse(contentType, contentEncoding, inputStream);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && statusCode != null && reasonPhrase != null) {
-          if(statusCode > 599 || statusCode > 299 && statusCode < 400 || statusCode < 100 || reasonPhrase.trim().isEmpty()){
+          if(statusCode > 599 || (statusCode > 299 && statusCode < 400) || statusCode < 100 || reasonPhrase.trim().isEmpty()){
             try{
               WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, contentEncoding, inputStream);
               webResourceResponse.setResponseHeaders(responseHeaders);

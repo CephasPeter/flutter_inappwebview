@@ -219,7 +219,7 @@ public class ContentBlockerHandler {
                                             responseHeaders.put(responseHeader.getKey(), TextUtils.join(",", responseHeader.getValue()));
                                         }
                                         int statusCode = urlConnection.getResponseCode();
-                                        if(statusCode > 599 || statusCode > 299 && statusCode < 400 || statusCode < 100 || reasonPhrase.trim().isEmpty()){
+                                        if(statusCode > 599 || (statusCode > 299 && statusCode < 400) || statusCode < 100 || reasonPhrase.trim().isEmpty()){
                                             try{
                                                 WebResourceResponse webResourceResponse = new WebResourceResponse(contentType, encoding, dataStream);
                                                 webResourceResponse.setResponseHeaders(responseHeaders);
